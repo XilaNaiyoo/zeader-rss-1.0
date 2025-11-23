@@ -136,7 +136,7 @@ const SectionDroppable = ({ id, title, count, children, onContextMenu, isActive,
             <button
                 onClick={onClick}
                 className={clsx(
-                    "w-full flex items-center justify-between px-2 py-2 rounded-lg transition-all duration-200 mb-2 group",
+                    "w-full flex items-center justify-between px-2 py-2 rounded-lg transition-all duration-200 mb-2 group focus:outline-none",
                     isActive
                         ? "bg-primary-50 text-primary-600"
                         : "hover:bg-gray-50 text-gray-500 hover:text-gray-900"
@@ -580,10 +580,10 @@ export function Sidebar({ currentView, setCurrentView, onAddFeed, onCreateFolder
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className={clsx(
-              "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200",
+              "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 focus:outline-none focus:ring-0 border",
               isSettingsOpen 
-                ? "bg-gray-100 text-gray-900" 
-                : "bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border border-gray-200"
+                ? "bg-gray-100 text-gray-900 border-transparent" 
+                : "bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border-gray-200"
             )}
           >
             <div className="flex items-center gap-3">

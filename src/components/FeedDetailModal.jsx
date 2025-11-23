@@ -1,18 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X, ExternalLink, Calendar, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { motion } from 'framer-motion';
 import { getEmbedUrl } from '../utils/rss';
 
-export function FeedDetailModal({ item, onClose }) {
+export function FeedDetailModal({ item, onClose, originRect }) {
     if (!item) return null;
+    
+    const modalRef = useRef(null);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
+        
+        // Focus the modal when it opens
+        if (modalRef.current) {
+            modalRef.current.focus();
+        }
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+
         return () => {
             document.body.style.overflow = 'unset';
+            window.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
+    }, [onClose]);
 
     // Get embed URL for video
     const embedUrl = getEmbedUrl(item.link);
@@ -42,14 +59,52 @@ export function FeedDetailModal({ item, onClose }) {
         return { __html: htmlContent };
     };
 
+    // Calculate initial position based on originRect
+    const initialVariants = originRect ? {
+        initial: {
+            opacity: 0,
+            scale: 0.5,
+            x: originRect.left + originRect.width / 2 - window.innerWidth / 2,
+            y: originRect.top + originRect.height / 2 - window.innerHeight / 2,
+        },
+        animate: {
+            opacity: 1,
+            scale: 1,
+            x: 0,
+            y: 0,
+            transition: { type: "spring", stiffness: 300, damping: 30 }
+        },
+        exit: {
+            opacity: 0,
+            scale: 0.5,
+            x: originRect.left + originRect.width / 2 - window.innerWidth / 2,
+            y: originRect.top + originRect.height / 2 - window.innerHeight / 2,
+            pointerEvents: "none",
+            transition: { duration: 0.2, ease: "easeIn" }
+        }
+    } : {
+        initial: { opacity: 0, scale: 0.95, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.95, y: 20, pointerEvents: "none", transition: { duration: 0.15 } }
+    };
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 pointer-events-none">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, pointerEvents: "none" }}
+                transition={{ duration: 0.15 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
                 onClick={onClose}
             />
 
-            <div className="relative w-full max-w-4xl h-[calc(100vh-4rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            <motion.div
+                initial={initialVariants.initial}
+                animate={initialVariants.animate}
+                exit={initialVariants.exit}
+                className="relative w-full max-w-4xl h-[calc(100vh-4rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
+            >
                 {/* Header */}
                 <div className="flex items-start justify-between p-6 border-b border-gray-100 bg-white z-10">
                     <div className="pr-8">
@@ -92,7 +147,11 @@ export function FeedDetailModal({ item, onClose }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-gray-50 custom-scrollbar">
+                <div 
+                    ref={modalRef}
+                    tabIndex="-1"
+                    className="flex-1 overflow-y-auto bg-gray-50 custom-scrollbar outline-none"
+                >
                     {embedUrl ? (
                         <div className="w-full h-full flex items-center justify-center bg-black">
                             <iframe
@@ -113,7 +172,7 @@ export function FeedDetailModal({ item, onClose }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

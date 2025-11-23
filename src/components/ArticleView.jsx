@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Clock, ChevronLeft, Play, Share2, Globe } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Helper to extract the first image from HTML content
 const extractImage = (html) => {
@@ -30,19 +31,106 @@ const estimateReadTime = (text) => {
   return `${minutes || 1} min`;
 };
 
-function ArticleList({ articles, onSelectArticle }) {
+function ArticleList({ articles, onSelectArticle, initialSelectedId }) {
+  const initialIndex = initialSelectedId ? articles.findIndex(a => a.id === initialSelectedId) : -1;
+  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+  const itemRefs = useRef([]);
+  const [highlightStyle, setHighlightStyle] = useState({ top: 0, height: 0, opacity: 0 });
+  const isKeyboardNav = useRef(initialIndex >= 0);
+
+  useEffect(() => {
+    const handleMouseMove = () => {
+      isKeyboardNav.current = false;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    const updateHighlight = () => {
+      if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
+        const el = itemRefs.current[selectedIndex];
+        setHighlightStyle({
+          top: el.offsetTop,
+          height: el.offsetHeight,
+          opacity: 1
+        });
+      } else {
+        setHighlightStyle(prev => ({ ...prev, opacity: 0 }));
+      }
+    };
+
+    updateHighlight();
+    window.addEventListener('resize', updateHighlight);
+    return () => window.removeEventListener('resize', updateHighlight);
+  }, [selectedIndex, articles]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        isKeyboardNav.current = true;
+      }
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(prev => {
+          const next = prev + 1;
+          return next < articles.length ? next : prev;
+        });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(prev => {
+          const next = prev - 1;
+          return next >= 0 ? next : prev;
+        });
+      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        e.preventDefault();
+        onSelectArticle(articles[selectedIndex]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [articles, selectedIndex, onSelectArticle]);
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
+      itemRefs.current[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [selectedIndex]);
+
   return (
-    <div className="max-w-5xl mx-auto">
-      {articles.map((article) => {
+    <div className="max-w-5xl mx-auto relative">
+      {/* Highlight Background */}
+      <div 
+        className="absolute left-0 w-full bg-gray-100 rounded-lg transition-all duration-200 ease-out pointer-events-none overflow-hidden"
+        style={{
+          top: highlightStyle.top,
+          height: highlightStyle.height,
+          opacity: highlightStyle.opacity,
+        }}
+      >
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-300" />
+      </div>
+
+      {articles.map((article, index) => {
         const image = extractImage(article.content) || extractImage(article.contentSnippet);
         const snippet = stripHtml(article.contentSnippet || article.content).slice(0, 150) + '...';
         const date = article.isoDate || article.pubDate ? new Date(article.isoDate || article.pubDate) : new Date();
-
+        
         return (
           <div 
             key={article.id} 
+            ref={el => itemRefs.current[index] = el}
             onClick={() => onSelectArticle(article)}
-            className="group flex gap-4 p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+            onMouseEnter={() => {
+              if (!isKeyboardNav.current) {
+                setSelectedIndex(index);
+              }
+            }}
+            className={`group flex gap-4 p-4 cursor-pointer relative z-10 mb-2 rounded-lg transition-colors duration-200 ${
+              index === selectedIndex ? '' : 'hover:bg-gray-50'
+            }`}
           >
             {/* Thumbnail */}
             <div className="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
@@ -211,6 +299,8 @@ function ArticleDetail({ article, onBack }) {
 
 export function ArticleView({ feeds }) {
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [hasNavigated, setHasNavigated] = useState(false);
+  const [lastSelectedId, setLastSelectedId] = useState(null);
 
   const allItems = feeds.flatMap(feed =>
     feed.items.map(item => ({ ...item, feedTitle: feed.title }))
@@ -230,19 +320,42 @@ export function ArticleView({ feeds }) {
     );
   }
 
-  if (selectedArticle) {
-    return (
-      <ArticleDetail 
-        article={selectedArticle} 
-        onBack={() => setSelectedArticle(null)} 
-      />
-    );
-  }
-
   return (
-    <ArticleList 
-      articles={allItems} 
-      onSelectArticle={setSelectedArticle} 
-    />
+    <AnimatePresence mode="wait">
+      {selectedArticle ? (
+        <motion.div
+          key="detail"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 50 }}
+          transition={{ duration: 0.15, ease: "easeInOut" }}
+          className="min-h-full"
+        >
+          <ArticleDetail 
+            article={selectedArticle} 
+            onBack={() => setSelectedArticle(null)} 
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="list"
+          initial={hasNavigated ? { opacity: 0, x: -50 } : false}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -50 }}
+          transition={{ duration: 0.15, ease: "easeInOut" }}
+          className="min-h-full"
+        >
+          <ArticleList 
+            articles={allItems} 
+            initialSelectedId={lastSelectedId}
+            onSelectArticle={(article) => {
+              setHasNavigated(true);
+              setSelectedArticle(article);
+              setLastSelectedId(article.id);
+            }} 
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

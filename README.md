@@ -1,6 +1,8 @@
 # Zeader RSS Reader
 
-A modern, personal RSS reader application built with React and Node.js.
+English | [简体中文](./README_zh-CN.md)
+
+A modern, personal RSS reader application built with React and Node.js, designed for privacy, performance, and a great user experience.
 
 ![Zeader Screenshot](images/zeader_Gallery.png)
 
@@ -8,19 +10,49 @@ A modern, personal RSS reader application built with React and Node.js.
 
 ## Features
 
-- **Feed Management**: Subscribe to RSS/Atom feeds and organize them into folders.
-- **Multiple Views**:
-  - **Article View**: Traditional list view for reading articles.
-  - **Waterfall View**: Grid layout optimized for image-heavy feeds.
-- **OPML Support**: Import your feed subscriptions from other readers via OPML.
-- **Local Storage**: All data is stored locally on your machine (JSON based), ensuring privacy and ownership of your data.
-- **Responsive Design**: Collapsible sidebar and responsive layout.
-- **Drag & Drop**: Organize feeds and folders easily.
-- **Keyboard Shortcuts**: Press `[` to toggle the sidebar.
+- **Smart Feed Management**: Easily subscribe to RSS/Atom feeds and organize them into custom folders to keep your reading list tidy.
+- **Dual View Modes**:
+  - **Article View**: A traditional, clean list layout optimized for reading text-heavy articles efficiently.
+  - **Waterfall View**: An immersive grid layout perfect for browsing image-centric feeds like art galleries or photography blogs.
+- **Privacy First**: All your data is stored locally on your machine using JSON files. No external servers tracking your reading habits—you own your data.
+- **OPML Support**: Seamlessly migrate your feed subscriptions from other RSS readers using OPML import.
+- **Interactive UI**:
+  - **Collapsible Sidebar**: Maximize your reading space with a toggleable sidebar.
+  - **Drag & Drop**: Intuitively organize your feeds and folders with drag-and-drop support.
+  - **Smooth Animations**: Enjoy a fluid user experience powered by Framer Motion.
+- **Keyboard Navigation**: Browse through your feeds and articles without leaving the keyboard.
+
+## Keyboard Shortcuts
+
+Master these shortcuts to navigate Zeader like a pro:
+
+### Global
+| Key | Action |
+| :--- | :--- |
+| `[` | Toggle Sidebar |
+| `1` | Switch to Waterfall View (All Gallerys) |
+| `2` | Switch to Article View (All Articles) |
+
+### Article View
+| Key | Action |
+| :--- | :--- |
+| `↑` / `↓` | Navigate through the article list |
+| `Enter` | Open the selected article |
+
+### Waterfall View
+| Key | Action |
+| :--- | :--- |
+| `↑` / `↓` / `←` / `→` | Navigate through the grid cards |
+| `Enter` | Open the selected item |
+
+### General
+| Key | Action |
+| :--- | :--- |
+| `Esc` | Close open modals or details view |
 
 ## Tech Stack
 
-- **Frontend**: React, Vite, Tailwind CSS, Zustand (State Management), Framer Motion, Lucide React (Icons).
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Zustand (State Management), Framer Motion, Lucide React.
 - **Backend**: Node.js, Express.
 - **Data Storage**: Local JSON files.
 
@@ -59,7 +91,7 @@ npm run dev
 
 - `src/`: Frontend React application.
 - `server/`: Backend Express server and file storage logic.
-- `data/`: Local data storage (feeds and cached articles). **Note**: This folder is ignored by git to protect your privacy.
+- `data/`: Local data storage (feeds and cached articles).
 
 ## License
 

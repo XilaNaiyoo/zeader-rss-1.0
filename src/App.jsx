@@ -16,7 +16,7 @@ function App() {
   const [createFolderType, setCreateFolderType] = useState(null);
   const [isImportOpmlModalOpen, setIsImportOpmlModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { feeds, folders, loadFeeds, refreshAllFeeds, isLoading, selectedSource } = useFeedStore();
+  const { feeds, folders, loadFeeds, refreshAllFeeds, isLoading, selectedSource, selectSource } = useFeedStore();
   const { applyTheme } = useThemeStore();
 
   // Initialize theme
@@ -29,19 +29,36 @@ function App() {
     loadFeeds();
   }, [loadFeeds]);
 
-  // Handle sidebar toggle shortcut
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Ignore shortcuts if user is typing in an input or textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+
       // Toggle sidebar on '[' key press
       // Using e.code 'BracketLeft' to handle physical key position regardless of input method
       if (e.key === '[' || e.code === 'BracketLeft') {
         setIsSidebarOpen(prev => !prev);
       }
+
+      // Switch to All Gallerys (Waterfall view)
+      if (e.key === '1') {
+        setCurrentView('waterfall');
+        selectSource('all');
+      }
+
+      // Switch to All Articles (Article view)
+      if (e.key === '2') {
+        setCurrentView('article');
+        selectSource('all');
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [selectSource]);
 
   const currentFeeds = feeds.filter(f => {
     // First filter by viewType

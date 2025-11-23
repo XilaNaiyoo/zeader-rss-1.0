@@ -1,13 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MoreHorizontal, Copy, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
 import { FeedDetailModal } from './FeedDetailModal';
 
 export function WaterfallView({ feeds }) {
   const [selectedItem, setSelectedItem] = useState(null);
+  const [originRect, setOriginRect] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [isKeyboardMode, setIsKeyboardMode] = useState(false);
 
-  const allItems = feeds.flatMap(feed =>
+  useEffect(() => {
+    const handleMouseMove = () => {
+      setIsKeyboardMode(false);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const allItems = useMemo(() => feeds.flatMap(feed =>
     feed.items.map(item => ({ ...item, feedTitle: feed.title, feedUrl: feed.url }))
   ).filter(item => {
     // Filter out future items
@@ -20,33 +32,98 @@ export function WaterfallView({ feeds }) {
     if (isNaN(dateA.getTime())) return 1;
     if (isNaN(dateB.getTime())) return -1;
     return dateB - dateA;
-  });
+  }), [feeds]);
 
-  const [numColumns, setNumColumns] = useState(1);
+  const getNumColumns = () => {
+    if (typeof window === 'undefined') return 1;
+    const width = window.innerWidth;
+    if (width >= 2560) return 7;
+    if (width >= 1920) return 6;
+    if (width >= 1536) return 5;
+    if (width >= 1280) return 4;
+    if (width >= 1024) return 3;
+    if (width >= 640) return 2;
+    return 1;
+  };
+
+  const [numColumns, setNumColumns] = useState(getNumColumns);
 
   useEffect(() => {
-    const updateColumns = () => {
-      // Subtract sidebar width (280px) + padding (48px) roughly to get container width
-      // Or just use window width breakpoints similar to Tailwind
-      const width = window.innerWidth;
-      if (width >= 2560) setNumColumns(7);
-      else if (width >= 1920) setNumColumns(6);
-      else if (width >= 1536) setNumColumns(5);
-      else if (width >= 1280) setNumColumns(4);
-      else if (width >= 1024) setNumColumns(3);
-      else if (width >= 640) setNumColumns(2);
-      else setNumColumns(1);
+    const handleResize = () => {
+      setNumColumns(getNumColumns());
     };
 
-    updateColumns();
-    window.addEventListener('resize', updateColumns);
-    return () => window.removeEventListener('resize', updateColumns);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const columns = Array.from({ length: numColumns }, () => []);
   allItems.forEach((item, index) => {
-    columns[index % numColumns].push(item);
+    columns[index % numColumns].push({ ...item, globalIndex: index });
   });
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedItem) return;
+
+      if (focusedIndex === -1) {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+          setIsKeyboardMode(true);
+          setFocusedIndex(0);
+        }
+        return;
+      }
+
+      let nextIndex = focusedIndex;
+      switch (e.key) {
+        case 'ArrowRight':
+          nextIndex = focusedIndex + 1;
+          break;
+        case 'ArrowLeft':
+          nextIndex = focusedIndex - 1;
+          break;
+        case 'ArrowDown':
+          nextIndex = focusedIndex + numColumns;
+          break;
+        case 'ArrowUp':
+          nextIndex = focusedIndex - numColumns;
+          break;
+        case 'Enter':
+          e.preventDefault();
+          const item = allItems[focusedIndex];
+          if (item) {
+             const el = document.getElementById(`card-${focusedIndex}`);
+             if (el) {
+               const rect = el.getBoundingClientRect();
+               setOriginRect(rect);
+               setSelectedItem(item);
+             }
+          }
+          return;
+        default:
+          return;
+      }
+
+      if (nextIndex >= 0 && nextIndex < allItems.length) {
+        e.preventDefault();
+        setIsKeyboardMode(true);
+        setFocusedIndex(nextIndex);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedIndex, numColumns, allItems, selectedItem]);
+
+  useEffect(() => {
+    if (focusedIndex >= 0 && isKeyboardMode) {
+      const el = document.getElementById(`card-${focusedIndex}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [focusedIndex, isKeyboardMode]);
 
   if (allItems.length === 0) {
     return (
@@ -132,29 +209,49 @@ export function WaterfallView({ feeds }) {
               const image = getImage(item);
               const isJavDb = item.feedUrl?.includes('javdb');
               const javId = isJavDb ? extractJavId(item) : null;
+              const isFocused = item.globalIndex === focusedIndex;
 
               return (
                 <div
                   key={item.id || item.link}
-                  onClick={() => setSelectedItem(item)}
-                  className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                  id={`card-${item.globalIndex}`}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setOriginRect(rect);
+                    setSelectedItem(item);
+                    setFocusedIndex(item.globalIndex);
+                  }}
+                  onMouseEnter={() => {
+                    if (!isKeyboardMode) {
+                      setFocusedIndex(item.globalIndex);
+                    }
+                  }}
+                  className={`bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 group cursor-pointer ${
+                    item.globalIndex === 0 ? 'scroll-mb-24' : item.globalIndex === allItems.length - 1 ? 'scroll-mt-24' : 'scroll-my-24'
+                  } ${isFocused && isKeyboardMode ? 'ring-2 ring-primary-500' : ''}`}
                 >
                   {image && (
                     <div className="relative aspect-auto overflow-hidden">
                       <img
                         src={image}
                         alt={item.title}
-                        className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
+                        className={`w-full h-auto object-cover transition-transform duration-700 ${
+                          isFocused ? 'scale-105' : ''
+                        }`}
                         loading="lazy"
                         referrerPolicy="no-referrer"
                         onError={(e) => e.target.style.display = 'none'}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className={`absolute inset-0 bg-gradient-to-t from-black/20 to-transparent transition-opacity duration-300 ${
+                        isFocused ? 'opacity-100' : 'opacity-0'
+                      }`} />
                     </div>
                   )}
 
                   <div className="p-3">
-                    <h3 className="font-bold text-gray-900 mb-1.5 leading-snug text-sm line-clamp-2 group-hover:text-primary-600 transition-colors">
+                    <h3 className={`font-bold text-gray-900 mb-1.5 leading-snug text-sm line-clamp-2 transition-colors ${
+                      isFocused ? 'text-primary-600' : ''
+                    }`}>
                       {item.title}
                     </h3>
 
@@ -191,12 +288,15 @@ export function WaterfallView({ feeds }) {
         ))}
       </div>
 
-      {selectedItem && (
-        <FeedDetailModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      )}
+      <AnimatePresence>
+        {selectedItem && (
+          <FeedDetailModal
+            item={selectedItem}
+            originRect={originRect}
+            onClose={() => setSelectedItem(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

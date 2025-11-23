@@ -2,6 +2,8 @@
 
 A modern, personal RSS reader application built with React and Node.js.
 
+![Zeader Screenshot](images/zeader.png)
+
 ## Features
 
 - **Feed Management**: Subscribe to RSS/Atom feeds and organize them into folders.

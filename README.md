@@ -29,27 +29,32 @@ A modern, personal RSS reader application built with React and Node.js.
 ### Installation
 
 1. Clone the repository:
-   \\\ash
-   git clone <repository-url>
+   ```bash
+   git clone https://github.com/AsleepX/zeader-rss.git
    cd rss-reader
-   \\\`n
+   ```
+
 2. Install dependencies:
-   \\\ash
+   ```bash
    npm install
-   \\\`n
+   ```
+
 ### Running the Application
 
 Start both the backend server and the frontend development server with a single command:
 
-\\\ash
+```bash
 npm run dev
-\\\`n
-- Frontend will be available at \http://localhost:5173\`n- Backend API runs on \http://localhost:3001\`n
+```
+
+- Frontend will be available at `http://localhost:5173`
+- Backend API runs on `http://localhost:3001`
+
 ## Project Structure
 
-- \src/\: Frontend React application.
-- \server/\: Backend Express server and file storage logic.
-- \data/\: Local data storage (feeds and cached articles). **Note**: This folder is ignored by git to protect your privacy.
+- `src/`: Frontend React application.
+- `server/`: Backend Express server and file storage logic.
+- `data/`: Local data storage (feeds and cached articles). **Note**: This folder is ignored by git to protect your privacy.
 
 ## License
 

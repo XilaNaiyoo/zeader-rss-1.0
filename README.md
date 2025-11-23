@@ -14,6 +14,7 @@ A modern, personal RSS reader application built with React and Node.js.
 - **Local Storage**: All data is stored locally on your machine (JSON based), ensuring privacy and ownership of your data.
 - **Responsive Design**: Collapsible sidebar and responsive layout.
 - **Drag & Drop**: Organize feeds and folders easily.
+- **Keyboard Shortcuts**: Press `[` to toggle the sidebar.
 
 ## Tech Stack
 

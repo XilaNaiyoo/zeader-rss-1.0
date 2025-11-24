@@ -11,7 +11,13 @@ export function WaterfallView({ feeds }) {
   const [copiedId, setCopiedId] = useState(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
+  const [tempReadIds, setTempReadIds] = useState(new Set());
   const { markItemAsRead, showUnreadOnly } = useFeedStore();
+
+  // Reset tempReadIds when showUnreadOnly changes
+  useEffect(() => {
+    setTempReadIds(new Set());
+  }, [showUnreadOnly]);
 
   useEffect(() => {
     const handleMouseMove = () => {
@@ -24,7 +30,7 @@ export function WaterfallView({ feeds }) {
   const allItems = useMemo(() => feeds.flatMap(feed =>
     feed.items.map(item => ({ ...item, feedTitle: feed.title, feedUrl: feed.url }))
   ).filter(item => {
-    if (showUnreadOnly && item.read) return false;
+    if (showUnreadOnly && item.read && !tempReadIds.has(item.id)) return false;
     // Filter out future items
     const date = new Date(item.isoDate || item.pubDate);
     if (isNaN(date.getTime())) return true;
@@ -35,19 +41,26 @@ export function WaterfallView({ feeds }) {
     if (isNaN(dateA.getTime())) return 1;
     if (isNaN(dateB.getTime())) return -1;
     return dateB - dateA;
-  }), [feeds, showUnreadOnly]);
+  }), [feeds, showUnreadOnly, tempReadIds]);
 
   useEffect(() => {
     if (focusedIndex >= 0 && focusedIndex < allItems.length) {
       const item = allItems[focusedIndex];
       if (!item.read) {
         const timer = setTimeout(() => {
+          if (showUnreadOnly) {
+            setTempReadIds(prev => {
+              const next = new Set(prev);
+              next.add(item.id);
+              return next;
+            });
+          }
           markItemAsRead(item.feedId, item.id);
         }, 0);
         return () => clearTimeout(timer);
       }
     }
-  }, [focusedIndex, allItems, markItemAsRead]);
+  }, [focusedIndex, allItems, markItemAsRead, showUnreadOnly]);
 
   const getNumColumns = () => {
     if (typeof window === 'undefined') return 1;
@@ -168,6 +181,16 @@ export function WaterfallView({ feeds }) {
           e.preventDefault();
           const item = allItems[focusedIndex];
           if (item) {
+             if (!item.read) {
+               if (showUnreadOnly) {
+                 setTempReadIds(prev => {
+                   const next = new Set(prev);
+                   next.add(item.id);
+                   return next;
+                 });
+               }
+               markItemAsRead(item.feedId, item.id);
+             }
              const el = document.getElementById(`card-${focusedIndex}`);
              if (el) {
                const rect = el.getBoundingClientRect();
@@ -305,6 +328,16 @@ export function WaterfallView({ feeds }) {
                     setOriginRect(rect);
                     setSelectedItem(item);
                     setFocusedIndex(item.globalIndex);
+                    if (!item.read) {
+                      if (showUnreadOnly) {
+                        setTempReadIds(prev => {
+                          const next = new Set(prev);
+                          next.add(item.id);
+                          return next;
+                        });
+                      }
+                      markItemAsRead(item.feedId, item.id);
+                    }
                   }}
                   onMouseEnter={() => {
                     if (!isKeyboardMode) {

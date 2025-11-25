@@ -1,10 +1,12 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
-import { 
-    readFeeds, 
-    writeFeeds, 
-    writeMainConfig, 
-    updateFeedItems, 
+import {
+    readFeeds,
+    writeFeeds,
+    writeMainConfig,
+    updateFeedItems,
     deleteFeedStorage,
     cleanupOldItems
 } from './utils/fileStorage.js';
@@ -12,8 +14,11 @@ import {
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -78,7 +83,7 @@ app.delete('/api/folders/:id', (req, res) => {
     try {
         const { id } = req.params;
         const data = readFeeds();
-        
+
         if (!data.folders) return res.status(404).json({ error: 'Folder not found' });
 
         const folderIndex = data.folders.findIndex(f => f.id === id);
@@ -167,7 +172,7 @@ app.delete('/api/feeds/:id', (req, res) => {
         }
 
         data.feeds.splice(feedIndex, 1);
-        
+
         // Delete the storage file for this feed
         deleteFeedStorage(id);
 
@@ -212,7 +217,7 @@ app.get('/api/proxy', async (req, res) => {
         }
         const contentType = response.headers.get('content-type');
         const text = await response.text();
-        
+
         res.set('Content-Type', contentType || 'application/xml');
         res.send(text);
     } catch (error) {
@@ -234,11 +239,11 @@ app.get('/api/article', async (req, res) => {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
-        
+
         if (!response.ok) {
             return res.status(response.status).json({ error: `Failed to fetch: ${response.statusText}` });
         }
-        
+
         const html = await response.text();
         const doc = new JSDOM(html, { url });
         const reader = new Readability(doc.window.document);
@@ -279,6 +284,14 @@ app.put('/api/folders/:id', (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Failed to update folder' });
     }
+});
+
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Handle SPA routing - return index.html for all non-API routes
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {

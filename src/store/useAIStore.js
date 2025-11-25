@@ -11,6 +11,7 @@ export const useAIStore = create(
 
             modelName: 'gpt-4o',
             language: 'Chinese',
+            isAIEnabled: true,
 
             // UI State
             isAIModalOpen: false,
@@ -26,6 +27,7 @@ export const useAIStore = create(
             closeAISettings: () => set({ isAISettingsOpen: false }),
 
             openAIModal: (context) => {
+                if (!get().isAIEnabled) return;
                 set({ isAIModalOpen: true, aiContext: context, aiResult: '', aiStatus: 'loading' });
                 get().generateAIResponse(context);
             },
@@ -33,7 +35,9 @@ export const useAIStore = create(
             closeAIModal: () => set({ isAIModalOpen: false, aiStatus: 'idle' }),
 
             generateAIResponse: async (context) => {
-                const { apiBase, apiKey, modelName, language } = get();
+                const { apiBase, apiKey, modelName, language, isAIEnabled } = get();
+
+                if (!isAIEnabled) return;
 
                 if (!apiKey) {
                     set({ aiStatus: 'error', aiResult: 'Please configure your API Key in Settings -> Z\'s soul.' });
@@ -89,7 +93,11 @@ export const useAIStore = create(
             },
 
             generateText: async (context) => {
-                const { apiBase, apiKey, modelName, language } = get();
+                const { apiBase, apiKey, modelName, language, isAIEnabled } = get();
+
+                if (!isAIEnabled) {
+                    throw new Error('AI features are disabled.');
+                }
 
                 if (!apiKey) {
                     throw new Error('Please configure your API Key in Settings -> Z\'s soul.');
@@ -133,7 +141,8 @@ export const useAIStore = create(
                 apiBase: state.apiBase,
                 apiKey: state.apiKey,
                 modelName: state.modelName,
-                language: state.language
+                language: state.language,
+                isAIEnabled: state.isAIEnabled
             }), // Only persist settings
         }
     )

@@ -512,6 +512,9 @@ export function ArticleView({ feeds }) {
         // Only allow in Article Detail View
         if (!selectedArticle) return;
 
+        // Check if AI is enabled
+        if (!useAIStore.getState().isAIEnabled) return;
+
         e.preventDefault();
         const selection = window.getSelection().toString().trim();
 

@@ -4,14 +4,15 @@ import { X, Save, Settings } from 'lucide-react';
 import { useAIStore } from '../store/useAIStore';
 
 export function AISettingsModal() {
-    const { isAISettingsOpen, closeAISettings, apiBase, apiKey, modelName, language, updateSettings } = useAIStore();
+    const { isAISettingsOpen, closeAISettings, apiBase, apiKey, modelName, language, isAIEnabled, updateSettings } = useAIStore();
 
     // Local state for form inputs to avoid excessive store updates/re-renders while typing
     const [localSettings, setLocalSettings] = useState({
         apiBase: '',
         apiKey: '',
         modelName: '',
-        language: ''
+        language: '',
+        isAIEnabled: true
     });
 
     useEffect(() => {
@@ -20,10 +21,11 @@ export function AISettingsModal() {
                 apiBase: apiBase || 'https://api.openai.com/v1',
                 apiKey: apiKey || '',
                 modelName: modelName || 'gpt-3.5-turbo',
-                language: language || 'Chinese'
+                language: language || 'Chinese',
+                isAIEnabled: isAIEnabled !== undefined ? isAIEnabled : true
             });
         }
-    }, [isAISettingsOpen, apiBase, apiKey, modelName, language]);
+    }, [isAISettingsOpen, apiBase, apiKey, modelName, language, isAIEnabled]);
 
     const handleSave = () => {
         updateSettings(localSettings);
@@ -64,6 +66,22 @@ export function AISettingsModal() {
 
                 {/* Content */}
                 <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900">Enable AI Features</label>
+                            <p className="text-xs text-gray-500">Turn off to disable all AI functionality.</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={localSettings.isAIEnabled}
+                                onChange={(e) => setLocalSettings(prev => ({ ...prev, isAIEnabled: e.target.checked }))}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        </label>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">API Base URL</label>
                         <input
@@ -71,7 +89,8 @@ export function AISettingsModal() {
                             value={localSettings.apiBase}
                             onChange={(e) => setLocalSettings(prev => ({ ...prev, apiBase: e.target.value }))}
                             placeholder="https://api.openai.com/v1"
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                            disabled={!localSettings.isAIEnabled}
+                            className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all ${!localSettings.isAIEnabled ? 'bg-gray-100 text-gray-400' : ''}`}
                         />
                         <p className="text-xs text-gray-400 mt-1">The base URL for the OpenAI-compatible API.</p>
                     </div>
@@ -83,7 +102,8 @@ export function AISettingsModal() {
                             value={localSettings.apiKey}
                             onChange={(e) => setLocalSettings(prev => ({ ...prev, apiKey: e.target.value }))}
                             placeholder="sk-..."
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                            disabled={!localSettings.isAIEnabled}
+                            className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all ${!localSettings.isAIEnabled ? 'bg-gray-100 text-gray-400' : ''}`}
                         />
                         <p className="text-xs text-gray-400 mt-1">Your secret API key. Stored locally.</p>
                     </div>
@@ -95,7 +115,8 @@ export function AISettingsModal() {
                             value={localSettings.modelName}
                             onChange={(e) => setLocalSettings(prev => ({ ...prev, modelName: e.target.value }))}
                             placeholder="gpt-3.5-turbo"
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                            disabled={!localSettings.isAIEnabled}
+                            className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all ${!localSettings.isAIEnabled ? 'bg-gray-100 text-gray-400' : ''}`}
                         />
                         <p className="text-xs text-gray-400 mt-1">The model ID to use (e.g., gpt-4, claude-3-opus).</p>
                     </div>
@@ -105,7 +126,8 @@ export function AISettingsModal() {
                         <select
                             value={localSettings.language}
                             onChange={(e) => setLocalSettings(prev => ({ ...prev, language: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white"
+                            disabled={!localSettings.isAIEnabled}
+                            className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-white ${!localSettings.isAIEnabled ? 'bg-gray-100 text-gray-400' : ''}`}
                         >
                             <option value="Chinese">Chinese</option>
                             <option value="English">English</option>

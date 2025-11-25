@@ -9,7 +9,7 @@ export function FeedDetailModal({ item, onClose, originRect }) {
     if (!item) return null;
 
     const modalRef = useRef(null);
-    const { generateText, language } = useAIStore();
+    const { generateText, language, isAIEnabled } = useAIStore();
     const [zymalData, setZymalData] = useState(null);
     const [loadingZymal, setLoadingZymal] = useState(false);
 
@@ -38,6 +38,9 @@ export function FeedDetailModal({ item, onClose, originRect }) {
     // Z YMAL Generation
     useEffect(() => {
         const generateZymal = async () => {
+            // Check if AI is enabled
+            if (!isAIEnabled) return;
+
             // Filter out video sources
             if (item.link.includes('pornhub') || item.link.includes('youtube') || item.link.includes('youtu.be')) {
                 return;
@@ -117,7 +120,7 @@ Summary: 渚光希与久留木玲出演的AV作品
         };
 
         generateZymal();
-    }, [item, language, generateText]);
+    }, [item, language, generateText, isAIEnabled]);
 
     // Get embed URL for video
     const embedUrl = getEmbedUrl(item.link);

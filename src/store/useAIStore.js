@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import OpenAI from 'openai';
+import { useAuthStore } from './useAuthStore';
 
 export const useAIStore = create(
     persist(
@@ -36,6 +37,7 @@ export const useAIStore = create(
 
             generateAIResponse: async (context) => {
                 const { apiBase, apiKey, modelName, language, isAIEnabled } = get();
+                const { token } = useAuthStore.getState();
 
                 if (!isAIEnabled) return;
 
@@ -63,7 +65,10 @@ export const useAIStore = create(
                     const openai = new OpenAI({
                         baseURL: finalApiBase,
                         apiKey: apiKey,
-                        dangerouslyAllowBrowser: true // Required for client-side usage
+                        dangerouslyAllowBrowser: true, // Required for client-side usage
+                        defaultHeaders: {
+                            'X-App-Token': token // Pass app auth token
+                        }
                     });
 
                     const completion = await openai.chat.completions.create({
@@ -94,6 +99,7 @@ export const useAIStore = create(
 
             generateText: async (context) => {
                 const { apiBase, apiKey, modelName, language, isAIEnabled } = get();
+                const { token } = useAuthStore.getState();
 
                 if (!isAIEnabled) {
                     throw new Error('AI features are disabled.');
@@ -121,7 +127,10 @@ export const useAIStore = create(
                 const openai = new OpenAI({
                     baseURL: finalApiBase,
                     apiKey: apiKey,
-                    dangerouslyAllowBrowser: true
+                    dangerouslyAllowBrowser: true,
+                    defaultHeaders: {
+                        'X-App-Token': token // Pass app auth token
+                    }
                 });
 
                 const completion = await openai.chat.completions.create({

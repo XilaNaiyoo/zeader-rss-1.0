@@ -32,12 +32,13 @@ const authMiddleware = (req, res, next) => {
     const password = process.env.PASSWORD;
     if (!password) return next(); // If no password set, allow all
 
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    // Check X-App-Token first (for AI requests), then Authorization
+    const token = req.headers['x-app-token'] || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+
+    if (!token) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const token = authHeader.split(' ')[1];
     // Simple token verification: token is base64(password)
     // In a real app, use JWT or sessions.
     const expectedToken = Buffer.from(password).toString('base64');
@@ -57,7 +58,6 @@ app.post('/api/login', (req, res) => {
 
         const { password } = req.body || {};
         const serverPassword = process.env.PASSWORD;
-
         console.log('Server password configured:', !!serverPassword);
 
         if (!serverPassword) {
@@ -82,15 +82,12 @@ app.post('/api/login', (req, res) => {
 
 // Apply auth middleware to all API routes except login and static files
 app.use('/api', (req, res, next) => {
-    if (req.path === '/login' || req.path === '/proxy' || req.path === '/article') {
-        // Optional: Keep proxy/article public or protect them too?
-        // Protecting them is safer.
-        // But for now let's protect everything except login.
-        // Wait, if I protect proxy/article, the frontend needs to send token.
-        // The frontend WILL send token for all API requests.
-        // So I should only exclude /login.
-        if (req.path === '/login') return next();
-    }
+    // Exclude login and proxy routes from global auth middleware
+    if (req.path === '/login') return next();
+
+    // For proxy routes, we still want to enforce OUR auth.
+    // The authMiddleware now checks X-App-Token, so it should work fine.
+
     authMiddleware(req, res, next);
 });
 
@@ -294,6 +291,35 @@ app.get('/api/proxy', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch URL' });
     }
 });
+
+// AI Proxy Routes
+const handleAIProxy = async (req, res, targetBaseUrl) => {
+    try {
+        // In app.use, req.path is relative to the mount point
+        const targetUrl = `${targetBaseUrl}${req.path}`;
+
+        console.log(`Proxying AI request to: ${targetUrl}`);
+
+        const response = await fetch(targetUrl, {
+            method: req.method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization // Pass the AI API Key
+            },
+            body: JSON.stringify(req.body)
+        });
+
+        const data = await response.json();
+        res.status(response.status).json(data);
+    } catch (error) {
+        console.error('AI Proxy Error:', error);
+        res.status(500).json({ error: 'Failed to proxy AI request' });
+    }
+};
+
+app.use('/api/moonshot/v1', (req, res) => handleAIProxy(req, res, 'https://api.moonshot.cn/v1'));
+app.use('/api/gemini/v1beta/openai', (req, res) => handleAIProxy(req, res, 'https://generativelanguage.googleapis.com/v1beta/openai'));
+app.use('/api/siliconflow/v1', (req, res) => handleAIProxy(req, res, 'https://api.siliconflow.cn/v1'));
 
 // GET article content
 app.get('/api/article', async (req, res) => {

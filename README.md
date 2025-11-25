@@ -6,7 +6,9 @@ A modern, personal RSS reader application built with React and Node.js, designed
 
 ![Zeader Screenshot](images/zeader_Gallery.png)
 
-![Zeader Screenshot](images/zeader_Article.png)
+![Zeader Screenshot](images/zeader_Article1.png)
+
+![Zeader Screenshot](images/zeader_Article2.png)
 
 ## Features
 
@@ -21,34 +23,38 @@ A modern, personal RSS reader application built with React and Node.js, designed
   - **Drag & Drop**: Intuitively organize your feeds and folders with drag-and-drop support.
   - **Smooth Animations**: Enjoy a fluid user experience powered by Framer Motion.
 - **Keyboard Navigation**: Browse through your feeds and articles without leaving the keyboard.
+- **AI Assistant**: Built-in AI integration to summarize articles or explain selected text instantly.
+
 
 ## Keyboard Shortcuts
 
 Master these shortcuts to navigate Zeader like a pro:
 
 ### Global
-| Key | Action |
-| :--- | :--- |
-| `[` | Toggle Sidebar |
-| `1` | Switch to Waterfall View (All Gallerys) |
-| `2` | Switch to Article View (All Articles) |
+| Key  | Action                                  |
+| :--- | :-------------------------------------- |
+| `[`  | Toggle Sidebar                          |
+| `1`  | Switch to Waterfall View (All Gallerys) |
+| `2`  | Switch to Article View (All Articles)   |
 
 ### Article View
-| Key | Action |
-| :--- | :--- |
-| `↑` / `↓` | Navigate through the article list |
-| `Enter` | Open the selected article |
-| `Space` | Mark current as read and move to next |
+| Key       | Action                                               |
+| :-------- | :--------------------------------------------------- |
+| `↑` / `↓` | Navigate through the article list                    |
+| `Enter`   | Open the selected article                            |
+| `Space`   | Mark current as read and move to next                |
+| `z`       | Open AI Assistant (Analyze article or selected text) |
+
 
 ### Waterfall View
-| Key | Action |
-| :--- | :--- |
+| Key                   | Action                          |
+| :-------------------- | :------------------------------ |
 | `↑` / `↓` / `←` / `→` | Navigate through the grid cards |
-| `Enter` | Open the selected item |
+| `Enter`               | Open the selected item          |
 
 ### General
-| Key | Action |
-| :--- | :--- |
+| Key   | Action                            |
+| :---- | :-------------------------------- |
 | `Esc` | Close open modals or details view |
 
 ## Tech Stack

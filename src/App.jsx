@@ -8,8 +8,10 @@ import { CreateFolderModal } from './components/CreateFolderModal';
 import { ImportOpmlModal } from './components/ImportOpmlModal';
 import { AIResultModal } from './components/AIResultModal';
 import { AISettingsModal } from './components/AISettingsModal';
+import Login from './components/Login';
 import { useFeedStore } from './store/useFeedStore';
 import { useThemeStore } from './store/useThemeStore';
+import { useAuthStore } from './store/useAuthStore';
 
 function App() {
   const [currentView, setCurrentView] = useState('article'); // 'article' or 'waterfall'
@@ -20,6 +22,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { feeds, folders, loadFeeds, refreshAllFeeds, isLoading, selectedSource, selectSource } = useFeedStore();
   const { applyTheme } = useThemeStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Initialize theme
   useEffect(() => {
@@ -28,8 +31,14 @@ function App() {
 
   // Load feeds from backend on mount
   useEffect(() => {
-    loadFeeds();
-  }, [loadFeeds]);
+    if (isAuthenticated) {
+      loadFeeds();
+    }
+  }, [loadFeeds, isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   // Handle keyboard shortcuts
   useEffect(() => {

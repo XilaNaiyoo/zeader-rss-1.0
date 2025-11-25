@@ -26,6 +26,60 @@ app.use(cors());
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
 
+// Authentication Middleware
+const authMiddleware = (req, res, next) => {
+    const password = process.env.PASSWORD;
+    if (!password) return next(); // If no password set, allow all
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    // Simple token verification: token is base64(password)
+    // In a real app, use JWT or sessions.
+    const expectedToken = Buffer.from(password).toString('base64');
+
+    if (token !== expectedToken) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    next();
+};
+
+// Login Route
+app.post('/api/login', (req, res) => {
+    const { password } = req.body;
+    const serverPassword = process.env.PASSWORD;
+
+    if (!serverPassword) {
+        // If no password configured, login is always successful (or unnecessary)
+        return res.json({ token: 'nopassword' });
+    }
+
+    if (password === serverPassword) {
+        const token = Buffer.from(password).toString('base64');
+        res.json({ token });
+    } else {
+        res.status(401).json({ error: 'Invalid password' });
+    }
+});
+
+// Apply auth middleware to all API routes except login and static files
+app.use('/api', (req, res, next) => {
+    if (req.path === '/login' || req.path === '/proxy' || req.path === '/article') {
+        // Optional: Keep proxy/article public or protect them too?
+        // Protecting them is safer.
+        // But for now let's protect everything except login.
+        // Wait, if I protect proxy/article, the frontend needs to send token.
+        // The frontend WILL send token for all API requests.
+        // So I should only exclude /login.
+        if (req.path === '/login') return next();
+    }
+    authMiddleware(req, res, next);
+});
+
 // GET all feeds
 app.get('/api/feeds', (req, res) => {
     try {

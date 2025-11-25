@@ -1,14 +1,28 @@
+import { useAuthStore } from '../store/useAuthStore';
+
 const API_BASE_URL = '/api';
 
 async function request(endpoint, options = {}) {
     try {
+        const token = useAuthStore.getState().token;
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
+            headers,
             ...options,
         });
+
+        if (response.status === 401) {
+            useAuthStore.getState().logout();
+            throw new Error('Unauthorized');
+        }
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({ error: 'Request failed' }));

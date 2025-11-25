@@ -43,18 +43,18 @@ export const useFeedStore = create((set, get) => ({
                 viewType, // 'waterfall' or 'article' or null
                 createdAt: new Date().toISOString()
             };
-            
+
             await api.addFolder(newFolder);
 
             // If feeds were selected, update them with the folderId
             if (feedIds.length > 0) {
                 const { feeds } = get();
-                const updatedFeeds = feeds.map(feed => 
-                    feedIds.includes(feed.id) 
+                const updatedFeeds = feeds.map(feed =>
+                    feedIds.includes(feed.id)
                         ? { ...feed, folderId: newFolder.id }
                         : feed
                 );
-                
+
                 await api.updateAllFeeds(updatedFeeds);
                 set(state => ({
                     folders: [...state.folders, newFolder],
@@ -79,8 +79,8 @@ export const useFeedStore = create((set, get) => ({
             set(state => ({
                 folders: state.folders.filter(f => f.id !== id),
                 // Also update local feeds to remove folderId
-                feeds: state.feeds.map(feed => 
-                    feed.folderId === id 
+                feeds: state.feeds.map(feed =>
+                    feed.folderId === id
                         ? { ...feed, folderId: undefined } // or null, depending on preference
                         : feed
                 )
@@ -94,7 +94,7 @@ export const useFeedStore = create((set, get) => ({
     renameFolder: async (id, newName) => {
         const previousFolders = get().folders;
         set(state => ({
-            folders: state.folders.map(f => 
+            folders: state.folders.map(f =>
                 f.id === id ? { ...f, name: newName } : f
             )
         }));
@@ -110,7 +110,7 @@ export const useFeedStore = create((set, get) => ({
     renameFeed: async (id, newTitle) => {
         const previousFeeds = get().feeds;
         set(state => ({
-            feeds: state.feeds.map(f => 
+            feeds: state.feeds.map(f =>
                 f.id === id ? { ...f, title: newTitle } : f
             )
         }));
@@ -125,10 +125,10 @@ export const useFeedStore = create((set, get) => ({
 
     moveFeed: async (feedId, folderId) => {
         const previousFeeds = get().feeds;
-        
+
         // Optimistic update
         set(state => ({
-            feeds: state.feeds.map(f => 
+            feeds: state.feeds.map(f =>
                 f.id === feedId ? { ...f, folderId: folderId } : f
             )
         }));
@@ -151,7 +151,7 @@ export const useFeedStore = create((set, get) => ({
             }
 
             const feedData = await fetchFeed(url);
-            
+
             // Auto-grouping logic
             let targetFolderId = undefined;
             let newFolder = null;
@@ -199,6 +199,7 @@ export const useFeedStore = create((set, get) => ({
                 description: feedData.description,
                 viewType, // 'article' or 'waterfall'
                 folderId: targetFolderId,
+                loadFullContent: true, // Default to true
                 items: feedData.items.map(item => ({
                     ...item,
                     id: item.guid || item.link || uuidv4(),
@@ -215,7 +216,7 @@ export const useFeedStore = create((set, get) => ({
 
             let currentFeeds = get().feeds;
             if (feedsToUpdate.length > 0) {
-                currentFeeds = currentFeeds.map(f => 
+                currentFeeds = currentFeeds.map(f =>
                     feedsToUpdate.some(ftu => ftu.id === f.id)
                         ? { ...f, folderId: newFolder.id }
                         : f
@@ -271,6 +272,7 @@ export const useFeedStore = create((set, get) => ({
                             description: '',
                             viewType: 'waterfall',
                             folderId: folderId,
+                            loadFullContent: true, // Default to true
                             items: [],
                             lastUpdated: new Date().toISOString()
                         });
@@ -288,6 +290,7 @@ export const useFeedStore = create((set, get) => ({
                         description: '',
                         viewType: 'waterfall',
                         folderId: undefined,
+                        loadFullContent: true, // Default to true
                         items: [],
                         lastUpdated: new Date().toISOString()
                     });
@@ -334,7 +337,7 @@ export const useFeedStore = create((set, get) => ({
             feeds.map(async (feed) => {
                 try {
                     const feedData = await fetchFeed(feed.url);
-                    
+
                     // Create a map of existing items for quick lookup
                     const existingItemsMap = new Map(
                         feed.items?.map(item => [item.id, item]) || []
@@ -345,7 +348,7 @@ export const useFeedStore = create((set, get) => ({
                         items: feedData.items.map(item => {
                             const id = item.guid || item.link || uuidv4();
                             const existingItem = existingItemsMap.get(id);
-                            
+
                             return {
                                 ...item,
                                 id,
@@ -378,7 +381,7 @@ export const useFeedStore = create((set, get) => ({
             if (feed.id === feedId) {
                 return {
                     ...feed,
-                    items: feed.items.map(item => 
+                    items: feed.items.map(item =>
                         item.id === itemId ? { ...item, read: true } : item
                     )
                 };
@@ -387,7 +390,7 @@ export const useFeedStore = create((set, get) => ({
         });
 
         set({ feeds: updatedFeeds });
-        
+
         // Optimistically update backend
         try {
             const feedToUpdate = updatedFeeds.find(f => f.id === feedId);
@@ -406,7 +409,7 @@ export const useFeedStore = create((set, get) => ({
             if (feed.id === feedId) {
                 return {
                     ...feed,
-                    items: feed.items.map(item => 
+                    items: feed.items.map(item =>
                         item.id === itemId ? { ...item, read: false } : item
                     )
                 };
@@ -415,7 +418,7 @@ export const useFeedStore = create((set, get) => ({
         });
 
         set({ feeds: updatedFeeds });
-        
+
         try {
             const feedToUpdate = updatedFeeds.find(f => f.id === feedId);
             if (feedToUpdate) {
@@ -429,7 +432,7 @@ export const useFeedStore = create((set, get) => ({
     updateFeedViewType: async (feedId, viewType) => {
         const previousFeeds = get().feeds;
         set(state => ({
-            feeds: state.feeds.map(f => 
+            feeds: state.feeds.map(f =>
                 f.id === feedId ? { ...f, viewType } : f
             )
         }));
@@ -445,8 +448,8 @@ export const useFeedStore = create((set, get) => ({
     updateFolderViewType: async (folderId, viewType) => {
         const previousFeeds = get().feeds;
         const previousFolders = get().folders;
-        
-        const updatedFeeds = previousFeeds.map(f => 
+
+        const updatedFeeds = previousFeeds.map(f =>
             f.folderId === folderId ? { ...f, viewType } : f
         );
 
@@ -461,11 +464,54 @@ export const useFeedStore = create((set, get) => ({
             await api.updateFolder(folderId, { viewType });
         } catch (error) {
             console.error('Failed to update folder view type:', error);
-            set({ 
-                feeds: previousFeeds, 
+            set({
+                feeds: previousFeeds,
                 folders: previousFolders,
-                error: 'Failed to update folder view type' 
+                error: 'Failed to update folder view type'
             });
+        }
+    },
+
+    toggleFeedFullContent: async (feedId) => {
+        const previousFeeds = get().feeds;
+        const feed = previousFeeds.find(f => f.id === feedId);
+        if (!feed) return;
+
+        const newStatus = !feed.loadFullContent;
+        const updatedFeeds = previousFeeds.map(f =>
+            f.id === feedId ? { ...f, loadFullContent: newStatus } : f
+        );
+
+        set({ feeds: updatedFeeds });
+
+        try {
+            await api.updateFeed(feedId, { loadFullContent: newStatus });
+        } catch (error) {
+            console.error('Failed to toggle feed full content:', error);
+            set({ feeds: previousFeeds, error: 'Failed to toggle feed full content' });
+        }
+    },
+
+    toggleFolderFullContent: async (folderId) => {
+        const previousFeeds = get().feeds;
+        const folderFeeds = previousFeeds.filter(f => f.folderId === folderId);
+        if (folderFeeds.length === 0) return;
+
+        // Check if all feeds in folder have loadFullContent enabled
+        const allEnabled = folderFeeds.every(f => f.loadFullContent);
+        const newStatus = !allEnabled;
+
+        const updatedFeeds = previousFeeds.map(f =>
+            f.folderId === folderId ? { ...f, loadFullContent: newStatus } : f
+        );
+
+        set({ feeds: updatedFeeds });
+
+        try {
+            await api.updateAllFeeds(updatedFeeds);
+        } catch (error) {
+            console.error('Failed to toggle folder full content:', error);
+            set({ feeds: previousFeeds, error: 'Failed to toggle folder full content' });
         }
     },
 

@@ -12,6 +12,7 @@
   --color-primary-800: rgb(var(--theme-primary-800));
   --color-primary-900: rgb(var(--theme-primary-900));
   --color-primary-950: rgb(var(--theme-primary-950));
+  --font-merriweather: Merriweather, serif;
 }
 
 :root {

@@ -70,16 +70,16 @@ function App() {
       return f.folderId && f.folderId === selectedSource.id;
     }
     if (selectedSource.type === 'feed') return f.id === selectedSource.id;
-    
+
     return true;
   });
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-gray-900">
-      <div 
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${isSidebarOpen ? 'w-[280px] opacity-100' : 'w-0 opacity-0'}`}
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${isSidebarOpen ? 'w-[240px] opacity-100' : 'w-0 opacity-0'}`}
       >
-        <div className="w-[280px]">
+        <div className="w-[240px]">
           <Sidebar
             currentView={currentView}
             setCurrentView={setCurrentView}
@@ -114,7 +114,7 @@ function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
-      
+
       <CreateFolderModal
         isOpen={isCreateFolderModalOpen}
         onClose={() => setIsCreateFolderModalOpen(false)}

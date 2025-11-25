@@ -8,6 +8,8 @@ export default {
         extend: {
             fontFamily: {
                 serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
+                outfit: ['Outfit', 'sans-serif'],
+                merriweather: ['Merriweather', 'serif'],
             },
         },
     },

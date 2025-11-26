@@ -1,10 +1,11 @@
 import Parser from 'rss-parser';
+import { useAuthStore } from '../store/useAuthStore';
 
 const parser = new Parser();
 const CORS_PROXY = "https://api.allorigins.win/get?url=";
 
 const PROXIES = [
-    (url) => `http://localhost:3001/api/proxy?url=${encodeURIComponent(url)}`,
+    (url) => `/api/proxy?url=${encodeURIComponent(url)}`,
     (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
     (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
 ];
@@ -31,7 +32,16 @@ export const fetchFeed = async (url) => {
     for (const proxyGen of PROXIES) {
         try {
             const proxyUrl = proxyGen(url);
-            const response = await fetch(proxyUrl);
+
+            const headers = {};
+            if (proxyUrl.startsWith('/')) {
+                const token = useAuthStore.getState().token;
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+            }
+
+            const response = await fetch(proxyUrl, { headers });
 
             if (!response.ok) continue;
 

@@ -391,7 +391,7 @@ app.use((req, res) => {
 
 const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 RSS Reader Backend running on http://localhost:${PORT}`);
 
     // Initial refresh on startup

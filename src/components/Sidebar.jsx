@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFeedStore } from '../store/useFeedStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAIStore } from '../store/useAIStore';
+import { api } from '../utils/api';
 import clsx from 'clsx';
 import { DndContext, useDraggable, useDroppable, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -199,19 +200,8 @@ export function Sidebar({ currentView, setCurrentView, onAddFeed, onCreateFolder
   const handleCleanup = async () => {
     setIsCleaning(true);
     try {
-      const response = await fetch('http://localhost:3001/api/cleanup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ days: 30 }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        alert(`Cleanup complete. Removed ${result.removedCount} old items.`);
-      } else {
-        alert('Cleanup failed: ' + result.error);
-      }
+      const result = await api.cleanup(30);
+      alert(`Cleanup complete. Removed ${result.removedCount} old items.`);
     } catch (error) {
       console.error('Cleanup error:', error);
       alert('Failed to cleanup items');

@@ -4,6 +4,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeedStore } from '../store/useFeedStore';
 import { useAIStore } from '../store/useAIStore';
+import { api } from '../utils/api';
 
 // Helper to extract the first image from HTML content
 const extractImage = (html) => {
@@ -230,12 +231,9 @@ function ArticleDetail({ article, onBack }) {
     const fetchFullContent = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:3001/api/article?url=${encodeURIComponent(article.link)}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (isMounted && data.content) {
-            setFullContent(data.content);
-          }
+        const data = await api.getArticle(article.link);
+        if (isMounted && data.content) {
+          setFullContent(data.content);
         }
       } catch (error) {
         console.error('Failed to fetch full content:', error);

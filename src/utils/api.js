@@ -87,4 +87,13 @@ export const api = {
     deleteFolder: (id) => request(`/folders/${id}`, {
         method: 'DELETE',
     }),
+
+    // Get full article content
+    getArticle: (url) => request(`/article?url=${encodeURIComponent(url)}`),
+
+    // Cleanup old items
+    cleanup: (days) => request('/cleanup', {
+        method: 'POST',
+        body: JSON.stringify({ days }),
+    }),
 };

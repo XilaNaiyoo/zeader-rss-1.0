@@ -140,44 +140,7 @@ Summary: 渚光希与久留木玲出演的AV作品
         const div = document.createElement('div');
         div.innerHTML = htmlContent;
 
-        // 1. Find the first image
-        const img = div.querySelector('img');
-
-        if (img) {
-            // Helper to remove previous siblings recursively
-            const removePrevSiblings = (element, target) => {
-                const children = Array.from(element.childNodes);
-                for (const child of children) {
-                    let containsTarget = false;
-                    if (child === target) {
-                        containsTarget = true;
-                    } else if (child.nodeType === Node.ELEMENT_NODE && child.contains(target)) {
-                        containsTarget = true;
-                    }
-
-                    if (containsTarget) {
-                        // Remove all preceding siblings
-                        let prev = child.previousSibling;
-                        while (prev) {
-                            const toRemove = prev;
-                            prev = prev.previousSibling;
-                            element.removeChild(toRemove);
-                        }
-
-                        // If it's an ancestor, recurse
-                        if (child !== target) {
-                            removePrevSiblings(child, target);
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            };
-
-            removePrevSiblings(div, img);
-        }
-
-        // 2. Fix for JavDB and other sites with hotlink protection
+        // Fix for JavDB and other sites with hotlink protection
         const images = div.querySelectorAll('img');
         images.forEach(img => {
             img.referrerPolicy = "no-referrer";

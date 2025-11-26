@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, ChevronLeft, Play, Share2, Globe } from 'lucide-react';
+import { Clock, ChevronLeft, Play, Share2, Globe, Sparkles, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeedStore } from '../store/useFeedStore';
@@ -219,6 +219,85 @@ function ArticleDetail({ article, onBack }) {
 
   const feed = feeds.find(f => f.id === article.feedId);
   const shouldLoadFullContent = feed?.loadFullContent;
+
+  // AI Summary State
+  const { generateText, language, isAIEnabled } = useAIStore();
+  const [zymalData, setZymalData] = useState(null);
+  const [loadingZymal, setLoadingZymal] = useState(false);
+
+  // Z Summary Generation
+  useEffect(() => {
+    const generateZymal = async () => {
+      // Check if AI is enabled
+      if (!isAIEnabled) return;
+
+      // If feed requires full content loading, wait for it
+      if (shouldLoadFullContent && !fullContent) {
+        return;
+      }
+
+      const content = fullContent || article.content || article.contentSnippet || '';
+      if (!content) return;
+
+      setLoadingZymal(true);
+      try {
+        const prompt = `
+你是文章摘要专家。请根据提供的文章内容，生成一个简洁的 YAML 格式信息栏。
+
+# Inputs
+- Title: ${article.title}
+- Author: ${article.author || article.feedTitle}
+- Content: ${stripHtml(content).slice(0, 8000)}
+- Date: ${article.isoDate || article.pubDate}
+- Target Language: ${language}
+
+# Instructions
+1. **分析内容**：理解文章核心主旨。
+2. **提取与总结**：
+   - 提取关键标签 (Tags)。
+   - 生成摘要 (Summary)：摘要应包含三句话。每句话都应简短易懂。请言简意赅，抓住核心思想。
+3. **格式化**：输出为纯净的 YAML 格式（不要使用 Markdown 代码块包裹），键名使用英文。
+   - Title: 翻译为 ${language}。
+   - Summary: 语言必须为 ${language}。
+   - Tags: 语言必须为 ${language}。
+
+# Output Schema (YAML)
+Title: [标题]
+Tags: [标签 1, 标签 2...]
+Summary: [三句话摘要]
+`;
+        const result = await generateText(prompt);
+
+        // Parse YAML-like output manually
+        const parsedData = {};
+        const lines = result.split('\n');
+        lines.forEach(line => {
+          const match = line.match(/^([a-zA-Z]+):\s*(.+)$/);
+          if (match) {
+            const key = match[1].trim();
+            const value = match[2].trim();
+            // Handle Tags as array
+            if (key === 'Tags') {
+              parsedData[key] = value.split(',').map(t => t.trim());
+            } else {
+              parsedData[key] = value;
+            }
+          }
+        });
+
+        if (Object.keys(parsedData).length > 0) {
+          setZymalData(parsedData);
+        }
+
+      } catch (error) {
+        console.error("Z Summary Generation Error:", error);
+      } finally {
+        setLoadingZymal(false);
+      }
+    };
+
+    generateZymal();
+  }, [article, fullContent, shouldLoadFullContent, language, generateText, isAIEnabled]);
 
   useEffect(() => {
     if (!shouldLoadFullContent) {
@@ -441,6 +520,45 @@ function ArticleDetail({ article, onBack }) {
           </div>
         </header>
 
+        {/* Z Summary Info Bar */}
+        {(loadingZymal || zymalData) && (
+          <div className="mb-10 p-6 bg-primary-50/30 rounded-xl border-2 border-primary-100">
+            <div className="flex items-center gap-2 mb-4 text-primary-600 font-semibold text-sm uppercase tracking-wider">
+              <Sparkles className="w-4 h-4" />
+              <span>Z Summary</span>
+              {loadingZymal && <Loader2 className="w-4 h-4 animate-spin ml-auto text-primary-400" />}
+            </div>
+
+            {zymalData && (
+              <div className="grid grid-cols-1 gap-y-3 text-sm">
+                {zymalData.Title && (
+                  <div className="font-medium text-gray-900 text-lg">
+                    {zymalData.Title}
+                  </div>
+                )}
+
+                {zymalData.Tags && Array.isArray(zymalData.Tags) && (
+                  <div className="flex gap-2 items-start mt-1">
+                    <div className="flex flex-wrap gap-1.5">
+                      {zymalData.Tags.map((tag, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-white border border-primary-100 text-primary-700 rounded-md text-xs font-medium">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {zymalData.Summary && (
+                  <div className="mt-2 pt-3 border-t border-primary-100 text-gray-700 leading-relaxed italic">
+                    {zymalData.Summary}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Article Content */}
         <article ref={contentRef} className="prose prose-xl prose-slate max-w-none font-serif prose-headings:font-serif prose-a:text-primary-600 prose-img:rounded-xl [&_p]:text-[22px] [&_p]:leading-relaxed [&_li]:text-[22px] [&_iframe]:w-full [&_iframe]:!h-auto [&_iframe]:!aspect-[3/2] translate-x-[2%]">
           {isLoading && !fullContent && (
@@ -500,38 +618,11 @@ export function ArticleView({ feeds }) {
       return dateB - dateA;
     });
 
-  // AI Context Logic
+  // AI Context Logic - Removed 'Z' key trigger as requested
+  // The AI summary is now automatically generated in ArticleDetail
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Ignore if user is typing in an input
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-
-      if (e.key.toLowerCase() === 'z') {
-        // Only allow in Article Detail View
-        if (!selectedArticle) return;
-
-        // Check if AI is enabled
-        if (!useAIStore.getState().isAIEnabled) return;
-
-        e.preventDefault();
-        const selection = window.getSelection().toString().trim();
-
-        if (selection) {
-          // 1. Text Selection Context
-          useAIStore.getState().openAIModal(`Explain or summarize this text:\n\n"${selection}"`);
-        } else {
-          // 2. Article Detail Context
-          const content = selectedArticle.content || selectedArticle.contentSnippet || '';
-          // Truncate content if too long (simple check, can be improved)
-          const truncatedContent = content.length > 5000 ? content.slice(0, 5000) + '...' : content;
-          useAIStore.getState().openAIModal(`Analyze this article:\n\nTitle: ${selectedArticle.title}\n\nContent: ${truncatedContent}`);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedArticle, lastSelectedId, allItems]);
+    // Keep empty effect or remove entirely if not needed for other things
+  }, []);
 
   if (allItems.length === 0) {
     return (

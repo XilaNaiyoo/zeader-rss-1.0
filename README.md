@@ -25,6 +25,11 @@ A modern, personal RSS reader application built with React and Node.js, designed
 - **Keyboard Navigation**: Browse through your feeds and articles without leaving the keyboard.
 - **AI Assistant**: Built-in AI integration to summarize articles or explain selected text instantly.
 
+## AI Features
+
+- **Z YAML (Gallery View)**: Automatically generates a structured YAML info bar for image galleries, extracting key details like Title, Creator, and Tags.
+- **Z Summary (Article View)**: Automatically generates a concise 3-sentence summary with tags for articles, helping you grasp the core content quickly.
+
 
 ## Keyboard Shortcuts
 
@@ -38,12 +43,12 @@ Master these shortcuts to navigate Zeader like a pro:
 | `2`  | Switch to Article View (All Articles)   |
 
 ### Article View
-| Key       | Action                                               |
-| :-------- | :--------------------------------------------------- |
-| `↑` / `↓` | Navigate through the article list                    |
-| `Enter`   | Open the selected article                            |
-| `Space`   | Mark current as read and move to next                |
-| `z`       | Open AI Assistant (Analyze article or selected text) |
+| Key       | Action                                |
+| :-------- | :------------------------------------ |
+| `↑` / `↓` | Navigate through the article list     |
+| `Enter`   | Open the selected article             |
+| `Space`   | Mark current as read and move to next |
+| `Space`   | Mark current as read and move to next |
 
 
 ### Waterfall View

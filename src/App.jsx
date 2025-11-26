@@ -112,7 +112,7 @@ function App() {
         >
           <PanelLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1 overflow-y-auto scroll-smooth">
+        <div className="flex-1 h-full">
           {currentView === 'article' ? (
             <ArticleView feeds={currentFeeds} />
           ) : (

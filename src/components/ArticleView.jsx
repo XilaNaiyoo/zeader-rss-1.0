@@ -112,7 +112,7 @@ function ArticleList({ articles, onSelectArticle, initialSelectedId, onMarkAsRea
   }, [selectedIndex]);
 
   return (
-    <div className="max-w-5xl mx-auto relative pt-6">
+    <div className="max-w-5xl mx-auto relative pt-6 pb-6">
       {/* Highlight Background */}
       <div
         className="absolute left-0 w-full bg-gray-100 rounded-lg transition-all duration-200 ease-out pointer-events-none overflow-hidden"
@@ -213,6 +213,7 @@ function ArticleDetail({ article, onBack }) {
   const [contentBlocks, setContentBlocks] = useState([]);
   const blockRefs = useRef([]);
   const contentRef = useRef(null);
+  const scrollContainerRef = useRef(null); // 添加滚动容器的引用
   const isUserScrolling = useRef(false);
   const scrollTimeout = useRef(null);
   const shouldAutoScroll = useRef(false);
@@ -425,6 +426,9 @@ Summary: [三句话摘要]
 
   // Track user scrolling and update selection on stop
   useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
     const handleScroll = () => {
       isUserScrolling.current = true;
       shouldAutoScroll.current = false;
@@ -437,7 +441,8 @@ Summary: [三句话摘要]
         isUserScrolling.current = false;
 
         // Find the block closest to the center of the viewport
-        const viewportCenter = window.innerHeight / 2;
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const viewportCenter = containerRect.top + containerRect.height / 2;
         let minDistance = Infinity;
         let closestIndex = -1;
 
@@ -463,9 +468,9 @@ Summary: [三句话摘要]
       }, 150);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', handleScroll, { capture: true });
+      scrollContainer.removeEventListener('scroll', handleScroll);
       if (scrollTimeout.current) {
         clearTimeout(scrollTimeout.current);
       }
@@ -481,7 +486,7 @@ Summary: [三句话摘要]
   let contentHtml = contentToDisplay;
 
   return (
-    <div className="relative min-h-full">
+    <div ref={scrollContainerRef} className="relative min-h-full overflow-y-auto h-full">
       {/* Back Button - Sticky positioned */}
       <div className="sticky top-4 z-10 h-0 overflow-visible">
         <button
@@ -641,7 +646,7 @@ export function ArticleView({ feeds }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 50 }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
-          className="min-h-full"
+          className="h-full"
         >
           <ArticleDetail
             article={selectedArticle}
@@ -655,7 +660,7 @@ export function ArticleView({ feeds }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
-          className="min-h-full"
+          className="h-full overflow-y-auto"
         >
           <ArticleList
             articles={allItems}

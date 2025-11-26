@@ -1,7 +1,23 @@
 import { create } from 'zustand';
 import { fetchFeed } from '../utils/rss';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { api } from '../utils/api';
+
+const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Standard DNS namespace
+
+const generateItemId = (item) => {
+    if (item.guid) return item.guid;
+    if (item.link) return item.link;
+
+    // Create a stable ID based on available content
+    // Prefer title + date, fallback to title, then just random
+    const payload = (item.title || '') + (item.isoDate || item.pubDate || '');
+    if (payload) {
+        return uuidv5(payload, NAMESPACE);
+    }
+
+    return uuidv4();
+};
 
 export const useFeedStore = create((set, get) => ({
     feeds: [],
@@ -202,7 +218,7 @@ export const useFeedStore = create((set, get) => ({
                 loadFullContent: true, // Default to true
                 items: feedData.items.map(item => ({
                     ...item,
-                    id: item.guid || item.link || uuidv4(),
+                    id: generateItemId(item),
                     read: false,
                     feedId: url // temporary ID linking
                 })),
@@ -346,7 +362,7 @@ export const useFeedStore = create((set, get) => ({
                     return {
                         ...feed,
                         items: feedData.items.map(item => {
-                            const id = item.guid || item.link || uuidv4();
+                            const id = generateItemId(item);
                             const existingItem = existingItemsMap.get(id);
 
                             return {

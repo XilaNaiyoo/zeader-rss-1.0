@@ -63,7 +63,7 @@ Master these shortcuts to navigate Zeader like a pro:
 - **Backend**: Node.js, Express.
 - **Data Storage**: Local JSON files.
 
-## Getting Started
+## Local Development
 
 ### Prerequisites
 
@@ -93,6 +93,49 @@ npm run dev
 
 - Frontend will be available at `http://localhost:5173`
 - Backend API runs on `http://localhost:3001`
+
+## Deployment
+
+### Deploy to Server
+
+To deploy Zeader on a server, follow these steps:
+
+1.  **Clone the repository** on your server:
+    ```bash
+    git clone https://github.com/AsleepX/zeader-rss.git
+    cd rss-reader
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Build the frontend**:
+    ```bash
+    npm run build
+    ```
+
+4.  **Start the server**:
+    ```bash
+    npm start
+    ```
+    The server will start on port 3001 by default. You can access the application at `http://your-server-ip:3001`.
+
+    > **Note**: In production, the backend server (port 3001) serves the built frontend files. This is different from development mode where Vite uses port 5173.
+
+    *Optional*: You can set the `PORT` and `PASSWORD` environment variables to customize the port and enable password protection.
+    ```bash
+    export PORT=8080
+    export PASSWORD=your_secure_password
+    npm start
+    ```
+
+### Deploy on Railway
+
+You can easily deploy Zeader to Railway with a single click:
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pCRDAl?referralCode=0OR46e&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ## Project Structure
 

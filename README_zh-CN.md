@@ -63,7 +63,7 @@
 - **后端**: Node.js, Express.
 - **数据存储**: 本地 JSON 文件.
 
-## 快速开始
+## 本地开发
 
 ### 前置要求
 
@@ -93,6 +93,49 @@ npm run dev
 
 - 前端访问地址: `http://localhost:5173`
 - 后端 API 运行在: `http://localhost:3001`
+
+## 部署
+
+### 部署到服务器
+
+要在服务器上部署 Zeader，请按照以下步骤操作：
+
+1.  在服务器上**克隆仓库**：
+    ```bash
+    git clone https://github.com/AsleepX/zeader-rss.git
+    cd rss-reader
+    ```
+
+2.  **安装依赖**：
+    ```bash
+    npm install
+    ```
+
+3.  **构建前端**：
+    ```bash
+    npm run build
+    ```
+
+4.  **启动服务器**：
+    ```bash
+    npm start
+    ```
+    服务器默认将在 3001 端口启动。您可以通过 `http://your-server-ip:3001` 访问应用。
+
+    > **注意**：在生产环境中，后端服务器（端口 3001）会直接提供构建好的前端文件。这与开发模式不同（开发模式下 Vite 使用 5173 端口）。
+
+    *可选*：您可以设置 `PORT` 和 `PASSWORD` 环境变量来自定义端口和启用密码保护。
+    ```bash
+    export PORT=8080
+    export PASSWORD=your_secure_password
+    npm start
+    ```
+
+### 部署到 Railway
+
+您可以点击下方按钮一键部署 Zeader 到 Railway：
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pCRDAl?referralCode=0OR46e&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ## 项目结构
 

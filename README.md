@@ -142,6 +142,12 @@ You can easily deploy Zeader to Railway with a single click:
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pCRDAl?referralCode=0OR46e&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
+### Deploy on Zeabur
+
+You can easily deploy Zeader to Zeabur with a single click:
+
+[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/deploy?url=https://github.com/AsleepX/zeader-rss)
+
 ## Project Structure
 
 - `src/`: Frontend React application.

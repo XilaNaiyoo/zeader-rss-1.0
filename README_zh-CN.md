@@ -142,6 +142,12 @@ npm run dev
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pCRDAl?referralCode=0OR46e&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
+### 部署到 Zeabur
+
+您可以点击下方按钮一键部署 Zeader 到 Zeabur：
+
+[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/deploy?url=https://github.com/AsleepX/zeader-rss)
+
 ## 项目结构
 
 - `src/`: 前端 React 应用

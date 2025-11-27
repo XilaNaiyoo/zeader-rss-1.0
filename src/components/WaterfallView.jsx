@@ -29,7 +29,7 @@ export function WaterfallView({ feeds }) {
   }, []);
 
   const allItems = useMemo(() => feeds.flatMap(feed =>
-    feed.items.map(item => ({ ...item, feedTitle: feed.title, feedUrl: feed.url }))
+    feed.items.map(item => ({ ...item, feedTitle: feed.title, feedUrl: feed.url, feedId: feed.id }))
   ).filter(item => {
     if (showUnreadOnly && item.read && !tempReadIds.has(item.id)) return false;
     // Filter out future items

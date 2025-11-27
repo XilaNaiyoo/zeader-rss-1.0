@@ -144,9 +144,39 @@ You can easily deploy Zeader to Railway with a single click:
 
 ### Deploy on Zeabur
 
-You can easily deploy Zeader to Zeabur with a single click:
+If you prefer to deploy manually on Zeabur, follow these steps:
 
-[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/deploy?url=https://github.com/AsleepX/zeader-rss)
+[Sign up/Login](https://zeabur.com/referral?referralCode=AsleepX): Go to Zeabur and log in with your GitHub account.
+
+Fork the Repository: Click the Fork button at the top right of this repository to copy it to your own GitHub account.
+
+Create Service:
+
+In the Zeabur Dashboard, click Create Project.
+
+Click Deploy New Service, select Git, and choose the zeader-rss repository you just forked.
+
+Configure Settings (Important): Before accessing the service, go to the service dashboard:
+
+Volume (Storage): Click on the Settings tab -> Volumes. Click "Add Volume".
+
+- Name: Any name (e.g., zeader-data).
+
+- Mount Path: Enter /app/data. (This is crucial for saving your data).
+
+Environment Variables: Click on the Variables tab.
+
+- Key: PASSWORD
+
+- Value: Set your desired access password.
+
+Enable Networking:
+
+Click on the Networking tab.
+
+Click Generate Domain (or bind your custom domain).
+
+Visit the generated URL to start using Zeader!
 
 ## Project Structure
 

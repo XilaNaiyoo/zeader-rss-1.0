@@ -158,8 +158,42 @@ export function writeMainConfig(data) {
     }
 }
 
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+
+const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Standard DNS namespace
+
+// Helper to generate stable ID (matches frontend logic)
+const generateItemId = (item, feedUrl) => {
+    // 1. Try to use GUID if available and valid
+    if (item.guid) {
+        if (typeof item.guid === 'string') return item.guid;
+        if (typeof item.guid === 'object') {
+            // Handle object GUIDs (e.g. { _: 'id', $: {...} })
+            if (item.guid._) return item.guid._;
+            // Fallback for other object structures - stringify stable parts
+            return JSON.stringify(item.guid);
+        }
+    }
+
+    // 2. Create a stable composite ID
+    // We do NOT use uuidv4() here because we want the ID to be deterministic (stable)
+    // so that refreshing the feed doesn't generate new IDs for the same items.
+    const parts = [
+        item.link || '',
+        item.title || '',
+        item.isoDate || item.pubDate || '',
+        item.author || '',
+        feedUrl || ''
+    ];
+
+    const payload = parts.join('|');
+
+    // Use UUID v5 (SHA-1 namespace hashing) for stability
+    return uuidv5(payload, NAMESPACE);
+};
+
 // Helper to update just one feed's items (Performance optimization)
-export function updateFeedItems(feedId, items) {
+export function updateFeedItems(feedId, items, feedUrl) {
     try {
         ensureDirectories();
         const feedFile = path.join(STORAGE_DIR, `${feedId}.json`);
@@ -174,36 +208,41 @@ export function updateFeedItems(feedId, items) {
             }
         }
 
-        // Merge logic:
-        // 1. Create a map of existing items by GUID or Link
-        const itemMap = new Map();
-
-        // Helper to get unique ID for an item
-        const getItemId = (item) => item.guid || item.link || item.title;
-
-        // Add existing items to map
+        // Create a map of existing items by ID for quick lookup
+        const existingItemsMap = new Map();
         existingItems.forEach(item => {
-            const id = getItemId(item);
-            if (id) itemMap.set(id, item);
+            if (item.id) existingItemsMap.set(item.id, item);
         });
 
-        // Add/Update with new items
-        items.forEach(item => {
-            const id = getItemId(item);
-            if (id) {
-                itemMap.set(id, item); // Overwrite with newer version
-            } else {
-                // If no ID, just add it (unlikely for valid RSS)
-                // But to be safe, maybe we shouldn't add it if we can't dedup?
-                // For now, let's assume valid RSS items have at least a link or title.
-            }
+        // Process new items
+        const processedItems = items.map(item => {
+            // Generate stable ID
+            const id = generateItemId(item, feedUrl);
+
+            // Check if item already exists
+            const existingItem = existingItemsMap.get(id);
+
+            return {
+                ...item,
+                id,
+                // Preserve local state from existing item
+                read: existingItem ? existingItem.read : false,
+                feedId: feedId, // Ensure feedId is set
+                // Preserve other potential local fields if any
+                ...((existingItem && existingItem.starred) ? { starred: existingItem.starred } : {})
+            };
         });
 
-        // Convert back to array
-        const mergedItems = Array.from(itemMap.values());
+        // Merge with existing items that might not be in the current fetch (optional, depending on policy)
+        // For now, we usually replace the list with the fetched list, but we might want to keep old items that are still within retention period?
+        // The current logic seems to be "replace with fetched items", but we filtered them by date in the caller or here?
+        // The caller (rssFetcher) passes `fetchedFeed.items`.
+
+        // Let's stick to: New list is the source of truth for *existence*, but we preserve state.
+        // However, we also have `shouldKeepItem` filter.
 
         // Filter old items before writing
-        const filteredItems = mergedItems.filter(shouldKeepItem);
+        const filteredItems = processedItems.filter(shouldKeepItem);
 
         // Sort by date (newest first)
         filteredItems.sort((a, b) => {

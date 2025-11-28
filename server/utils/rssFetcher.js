@@ -52,7 +52,7 @@ export async function refreshAllFeeds() {
                     // We map the fetched items to match our schema if necessary, 
                     // but rss-parser output is usually compatible.
                     // We rely on updateFeedItems to filter duplicates/old items.
-                    const success = updateFeedItems(feed.id, fetchedFeed.items);
+                    const success = updateFeedItems(feed.id, fetchedFeed.items, feed.url);
                     if (success) updatedCount++;
                 } else {
                     errorCount++;

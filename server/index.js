@@ -187,7 +187,7 @@ app.post('/api/feeds', (req, res) => {
         data.feeds.push(newFeed);
 
         const configSaved = writeMainConfig(data);
-        const itemsSaved = updateFeedItems(newFeed.id, newFeed.items || []);
+        const itemsSaved = updateFeedItems(newFeed.id, newFeed.items || [], newFeed.url);
 
         if (configSaved && itemsSaved) {
             res.status(201).json(newFeed);
@@ -214,7 +214,7 @@ app.put('/api/feeds/:id', (req, res) => {
         data.feeds[feedIndex] = { ...data.feeds[feedIndex], ...updates };
 
         const configSaved = writeMainConfig(data);
-        const itemsSaved = updateFeedItems(id, data.feeds[feedIndex].items || []);
+        const itemsSaved = updateFeedItems(id, data.feeds[feedIndex].items || [], data.feeds[feedIndex].url);
 
         if (configSaved && itemsSaved) {
             res.json(data.feeds[feedIndex]);

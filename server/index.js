@@ -415,7 +415,11 @@ app.put('/api/folders/:id', (req, res) => {
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Handle SPA routing - return index.html for all non-API routes
-app.use((req, res) => {
+app.use((req, res, next) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 

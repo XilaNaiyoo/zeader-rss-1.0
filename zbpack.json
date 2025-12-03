@@ -1,5 +1,6 @@
 {
-  "build_type": "node",
+  "build_command": "npm run build",
   "start_command": "node server/index.js",
-  "static": false
+  "node_version": "22",
+  "serverless": false
 }

@@ -28,7 +28,7 @@ export const parseOpml = async (file) => {
                             type: 'feed',
                             title: title || text || xmlUrl,
                             url: xmlUrl,
-                            viewType: viewType || 'waterfall', // Default to waterfall if not specified
+                            viewType: viewType || 'article', // Default to article if not specified
                             loadFullContent: loadFullContent === 'true',
                         };
                     } else {

@@ -21,7 +21,12 @@ import { useAIStore } from './store/useAIStore';
 import { api } from './utils/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('article'); // 'article' or 'photo'
+  // Load saved view from sessionStorage, default to 'article'
+  // sessionStorage persists across page refresh but clears when tab is closed
+  const [currentView, setCurrentView] = useState(() => {
+    const saved = sessionStorage.getItem('zeader-current-view');
+    return saved && ['article', 'photo', 'video'].includes(saved) ? saved : 'article';
+  });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [createFolderType, setCreateFolderType] = useState(null);
@@ -45,6 +50,11 @@ function App() {
   useEffect(() => {
     applyTheme();
   }, [applyTheme]);
+
+  // Persist currentView to sessionStorage (survives refresh, clears on tab close)
+  useEffect(() => {
+    sessionStorage.setItem('zeader-current-view', currentView);
+  }, [currentView]);
 
   // Load feeds from backend on mount
   useEffect(() => {
@@ -211,11 +221,11 @@ function App() {
         </button>
         <div className="flex-1 h-full overflow-y-auto pb-20 md:pb-0">
           {currentView === 'article' ? (
-            <ArticleView feeds={currentFeeds} />
+            <ArticleView key={`article-${selectedSource.type}-${selectedSource.id}`} feeds={currentFeeds} />
           ) : currentView === 'video' ? (
-            <VideoView feeds={currentFeeds} />
+            <VideoView key={`video-${selectedSource.type}-${selectedSource.id}`} feeds={currentFeeds} />
           ) : (
-            <PhotoView feeds={currentFeeds} />
+            <PhotoView key={`photo-${selectedSource.type}-${selectedSource.id}`} feeds={currentFeeds} />
           )}
         </div>
       </main>

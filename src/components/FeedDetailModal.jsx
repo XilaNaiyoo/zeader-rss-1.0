@@ -208,7 +208,7 @@ Summary: 渚光希与久留木玲出演的AV作品
                 initial={initialVariants.initial}
                 animate={initialVariants.animate}
                 exit={initialVariants.exit}
-                className="relative w-full max-w-4xl h-[calc(100vh-4rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
+                className="relative w-full sm:w-[70vw] lg:w-[40vw] max-w-[800px] h-[calc(100vh-4rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
             >
                 {/* Header */}
                 <div className="flex items-start justify-between p-6 border-b border-gray-100 bg-white z-10">

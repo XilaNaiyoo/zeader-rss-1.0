@@ -39,13 +39,27 @@ export const useFeedStore = create((set, get) => ({
     folders: [],
     isLoading: false,
     error: null,
-    selectedSource: { type: 'all', id: null }, // 'all', 'folder', 'feed'
+    selectedSource: (() => {
+        // Use sessionStorage so it persists across refresh but clears on tab close
+        try {
+            const saved = sessionStorage.getItem('zeader-selected-source');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && ['all', 'folder', 'feed'].includes(parsed.type)) {
+                    return parsed;
+                }
+            }
+        } catch (e) {}
+        return { type: 'all', id: null };
+    })(),
     showUnreadOnly: false,
 
     toggleShowUnreadOnly: () => set(state => ({ showUnreadOnly: !state.showUnreadOnly })),
 
     selectSource: (type, id = null) => {
-        set({ selectedSource: { type, id } });
+        const selectedSource = { type, id };
+        sessionStorage.setItem('zeader-selected-source', JSON.stringify(selectedSource));
+        set({ selectedSource });
     },
 
     clearError: () => set({ error: null }),

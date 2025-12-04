@@ -57,7 +57,7 @@ body {
   background-color: rgba(156, 163, 175, 0.8);
 }
 
-/* 中文字体大小调整 - 通过 size-adjust 让中文字体显示更小 */
+
 @font-face {
   font-family: 'Noto Serif SC Adjusted';
   src: local('Noto Serif SC');
@@ -65,18 +65,24 @@ body {
   size-adjust: 95%;
 }
 
-/* Source Serif 4 阅读优化 - Readwise 风格 */
 .prose {
-  font-family: 'Source Serif 4', 'Noto Serif SC Adjusted', 'Noto Serif SC', serif;
+  font-family:'Source Serif 4', 'Noto Serif SC Adjusted', 'Noto Serif SC', serif;
   font-optical-sizing: auto;
-  font-variation-settings: 'opsz' 19;
+  font-variation-settings: 'opsz' 18;
   line-height: 1.8;
-  color: #1a1a1a;
+  color: #28313B;
+
+  text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 2;
+  -webkit-hyphenate-limit-chars: 6 3 2;
+  overflow-wrap: break-word;
 }
 
 .prose p,
 .prose li {
-  font-variation-settings: 'opsz' 19, 'wght' 400;
+  font-variation-settings: 'opsz' 14, 'wght' 400;
   font-size: 21px;
   line-height: 1.4;
   letter-spacing: 0.01em;
@@ -114,15 +120,35 @@ body {
   margin-bottom: 0.3em;
 }
 
-/* 链接样式 */
 .prose a {
   color: #0D1E8E;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-/* 文章详情页标题样式 */
 .article-title {
   font-family: 'Source Serif 4', 'Noto Serif SC Adjusted', 'Noto Serif SC', serif;
   font-weight: 700;
+  line-height: 1;
+}
+
+/* Text Selection Style */
+::selection {
+  background-color: #DEECFF;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #C3DCFF;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  box-shadow: 0 -0.15em 0 #DEECFF;
+}
+
+::-moz-selection {
+  background-color: #DEECFF;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #C3DCFF;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  box-shadow: 0 -0.15em 0 #DEECFF;
 }

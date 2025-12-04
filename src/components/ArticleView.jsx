@@ -523,7 +523,7 @@ Summary: [三句话摘要]
         </button>
       </div>
 
-      <div className="max-w-[646px] mx-auto px-6 py-8 animate-in fade-in duration-300">
+      <div className="max-w-[676px] mx-auto px-6 py-8 animate-in fade-in duration-300">
         {/* Article Header */}
         <header className="mb-10">
           <div className="flex items-center gap-2 mb-6 text-sm font-medium text-gray-600">
@@ -590,7 +590,7 @@ Summary: [三句话摘要]
         )}
 
         {/* Article Content */}
-        <article ref={contentRef} className="prose prose-lg prose-slate max-w-none font-serif prose-headings:font-serif prose-a:text-primary-600 prose-img:rounded-xl [&_iframe]:w-full [&_iframe]:!h-auto [&_iframe]:!aspect-[3/2] translate-x-[2%] relative">
+        <article ref={contentRef} className="prose prose-lg prose-slate max-w-none font-serif prose-headings:font-serif prose-a:text-primary-600 prose-img:rounded-xl [&_iframe]:w-full [&_iframe]:!h-auto [&_iframe]:!aspect-[3/2] relative">
           {/* Highlight Line */}
           <div
             className="absolute -left-6 w-[3.5px] bg-[#76B2ED] transition-all duration-200 ease-out pointer-events-none"
